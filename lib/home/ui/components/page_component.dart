@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:simple_todo_app/home/cubit/cubit.dart';
+import 'package:simple_todo_app/home/cubit/states.dart';
 import 'package:simple_todo_app/home/model/task_model.dart';
 
 import '../../../resources/enums.dart';
@@ -32,10 +33,15 @@ class PageComponent extends StatelessWidget {
             itemBuilder: (context, index) {
               TaskModel task = tasks[index];
               return Dismissible(
-                key: Key('${task.id}'),
+                key: UniqueKey(),
+                // key: Key('${task.id}'),
                 onDismissed: (direction) async {
                   await HomeCubit.get(context)
-                      .deleteRecordFromDatabase(id: task.id);
+                      .deleteRecordFromDatabase(id: task.id !)
+                      .then((va) {
+                    tasks.removeAt(index);
+                    HomeCubit.get(context).emit(DoneDeleteDataBaseElement());
+                  });
                 },
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -74,8 +80,10 @@ class PageComponent extends StatelessWidget {
                     ),
                     InkWell(
                         onTap: () async {
-                          await HomeCubit.get(context).updateRecordInDatabase(
-                              id: task.id, status: Status.done.name);
+                          await HomeCubit.get(context)
+                              .updateRecordInDatabase(
+                                  id: task.id ?? 0, status: Status.done.name)
+                             ;
                         },
                         child: const Icon(
                           Icons.check_box,
@@ -83,8 +91,11 @@ class PageComponent extends StatelessWidget {
                         )),
                     InkWell(
                         onTap: () async {
-                          await HomeCubit.get(context).updateRecordInDatabase(
-                              id: task.id, status: Status.archived.name);
+                          await HomeCubit.get(context)
+                              .updateRecordInDatabase(
+                                  id: task.id ?? 0,
+                                  status: Status.archived.name)
+                         ;
                         },
                         child: const Icon(
                           Icons.archive,

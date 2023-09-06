@@ -13,12 +13,14 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => HomeCubit(),
+      create: (context) => HomeCubit()..createOpenDatabase(),
       child: BlocConsumer<HomeCubit, HomeCubitStates>(
         listener: (BuildContext context, state) {},
         builder: (BuildContext context, HomeCubitStates state) {
           HomeCubit homeCubit = HomeCubit.get(context);
+
           return Scaffold(
+            key: homeCubit.scaffoldKey,
             backgroundColor: Colors.white,
             appBar: AppBar(
               backgroundColor: Colors.blue,
@@ -32,12 +34,19 @@ class HomeScreen extends StatelessWidget {
                 ),
               ),
             ),
-            body: PageComponent(
-              tasks: homeCubit
-                      .tasksMap[Status.values[homeCubit.navBarIndex].name] ??
-                  [],
-              empty: state is EmptyTasksState,
-              loading: state is LoadingTasksState,
+            body: RefreshIndicator(
+              onRefresh: () async{
+                await homeCubit.getFromDatabase();
+              },
+              child: PageComponent(
+                      tasks: homeCubit.tasksMap[
+                              Status.values[homeCubit.navBarIndex].name] ??
+                          [],
+                      empty: (homeCubit.tasksMap[
+                      Status.values[homeCubit.navBarIndex].name] ??
+                          []).isEmpty,
+                      loading: state is LoadingTasksState,
+                    ),
             ),
             floatingActionButton: FloatingActionButton(
               onPressed: () {
@@ -54,15 +63,17 @@ class HomeScreen extends StatelessWidget {
                       controller: homeCubit.timeController,
                       title: 'Task Time',
                       onTap: () {
-                        homeCubit.timePickerFunction();
-                      },
+                        homeCubit.timePickerFunction( context);
+                        },
                       icon: Icons.access_time_outlined,
+                      readOnly: true,
                     ),
                     date: TextFormFieldModel(
                       controller: homeCubit.dateController,
                       title: 'Task Date',
+                      readOnly: true,
                       onTap: () {
-                        homeCubit.datePickerFunction();
+                        homeCubit.datePickerFunction(context);
                       },
                       icon: Icons.calendar_today,
                     ),
