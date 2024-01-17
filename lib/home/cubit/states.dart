@@ -23,3 +23,4 @@ class LoadingGetDataBase extends HomeCubitStates{}
 class ErrorGetDataBase extends HomeCubitStates{}
 class SuccessfulDataBaseTransaction extends HomeCubitStates{}
 class ErrorDataBaseTransaction extends HomeCubitStates{}
+j
